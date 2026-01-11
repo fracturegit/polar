@@ -1,0 +1,4 @@
+- api check for subscriptions & purchases
+  - called on player login
+  - local file-based caching?
+- discord webhook for reporting invalid minecraft usernames etc for refunds
