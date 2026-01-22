@@ -16,10 +16,30 @@ data class Checkout(
     val currency: String,
 ) {
     enum class Status(val id: String) {
+        /**
+         * The checkout session was opened.
+         */
         OPEN("open"),
+
+        /**
+         * The checkout session was expired and is no more accessible.
+         */
         EXPIRED("expired"),
+
+        /**
+         * The user on the checkout session clicked Pay. This is not indicative of the payment's success status.
+         */
         CONFIRMED("confirmed"),
+
+        /**
+         * The checkout definitely failed for technical reasons and cannot be retried.
+         * In most cases, this state is never reached.
+         */
         FAILED("failed"),
+
+        /**
+         * The payment on the checkout was performed successfully.
+         */
         SUCCEEDED("succeeded");
 
         companion object {
