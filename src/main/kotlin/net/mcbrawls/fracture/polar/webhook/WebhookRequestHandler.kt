@@ -33,11 +33,14 @@ class WebhookRequestHandler(
 
         val checkout = event.checkout
         if (checkout.status == Checkout.Status.SUCCEEDED) {
-            // check for existing customer id
-            if (checkout.externalCustomerId.isPresent) return
-
             // check for customer id
             val customerId = checkout.customerId.getOrNull() ?: return // when does that happen??
+
+            // get customer state
+            val customerState = api.getCustomerState(customerId)
+
+            // check for existing customer id
+            if (customerState.externalId.isPresent) return
 
             logger.info("No external id found: $customerId. Patching.")
 
