@@ -89,6 +89,10 @@ data class Checkout(
         val id: UUID,
         val name: String,
     ) {
+        override fun toString(): String {
+            return name
+        }
+
         companion object {
             val CODEC: Codec<Product> = RecordCodecBuilder.create { instance ->
                 instance.group(
