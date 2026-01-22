@@ -33,39 +33,49 @@ class WebhookRequestHandler(
 
         val checkout = event.checkout
         if (checkout.status == Checkout.Status.SUCCEEDED) {
-            // check for customer id
-            val customerId = checkout.customerId.getOrNull() ?: return // when does that happen??
-
-            // get customer state
-            val customerState = api.getCustomerState(customerId)
-
-            // check for existing customer id
-            if (customerState.externalId.isPresent) return
-
-            logger.info("No external id found: $customerId. Patching.")
-
-            // get minecraft username
-            val customData = checkout.customFieldData
-            val minecraftUsername = customData[CustomFields.MINECRAFT_USERNAME]
-                ?: error("No minecraft username provided")
-            if (!MinecraftUsernameHelper.validateMinecraftUsername(minecraftUsername)) {
-                PolarEvents.emit(InvalidPolarProfileEvent::class, InvalidPolarProfileEvent(event, InvalidPolarProfileEvent.Reason.INVALID_USERNAME))
-                error("Invalid Minecraft username")
-            }
-
-            // get minecraft uuid from username
-            val minecraftUuid = MinecraftUsernameHelper.getPlayerUuid(minecraftUsername)
-            if (minecraftUuid == null) {
-                PolarEvents.emit(InvalidPolarProfileEvent::class, InvalidPolarProfileEvent(event, InvalidPolarProfileEvent.Reason.PROFILE_NOT_EXIST))
-                error("Username does not match to a profile")
-            }
-
-            // patch
-            logger.info("Paired $customerId given username $minecraftUsername to $minecraftUuid.")
-            api.patchExternalId(customerId, minecraftUuid)
+            patchExternalId(checkout, event)
         }
 
         PolarEvents.emit(CheckoutUpdatedEvent::class, event)
+    }
+
+    private fun patchExternalId(checkout: Checkout, event: CheckoutUpdatedEvent) {
+        // check for customer id
+        val customerId = checkout.customerId.getOrNull() ?: return // when does that happen??
+
+        // get customer state
+        val customerState = api.getCustomerState(customerId)
+
+        // check for existing customer id
+        if (customerState.externalId.isPresent) return
+
+        logger.info("No external id found: $customerId. Patching.")
+
+        // get minecraft username
+        val customData = checkout.customFieldData
+        val minecraftUsername = customData[CustomFields.MINECRAFT_USERNAME]
+            ?: error("No minecraft username provided")
+        if (!MinecraftUsernameHelper.validateMinecraftUsername(minecraftUsername)) {
+            PolarEvents.emit(
+                InvalidPolarProfileEvent::class,
+                InvalidPolarProfileEvent(event, InvalidPolarProfileEvent.Reason.INVALID_USERNAME)
+            )
+            error("Invalid Minecraft username")
+        }
+
+        // get minecraft uuid from username
+        val minecraftUuid = MinecraftUsernameHelper.getPlayerUuid(minecraftUsername)
+        if (minecraftUuid == null) {
+            PolarEvents.emit(
+                InvalidPolarProfileEvent::class,
+                InvalidPolarProfileEvent(event, InvalidPolarProfileEvent.Reason.PROFILE_NOT_EXIST)
+            )
+            error("Username does not match to a profile")
+        }
+
+        // patch
+        logger.info("Paired $customerId given username $minecraftUsername to $minecraftUuid.")
+        api.patchExternalId(customerId, minecraftUuid)
     }
 
     fun handleCustomerStateChanged(event: CustomerStateChangedEvent) {
