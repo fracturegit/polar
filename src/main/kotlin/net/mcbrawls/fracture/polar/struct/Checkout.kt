@@ -7,13 +7,50 @@ import java.util.Optional
 import java.util.UUID
 
 data class Checkout(
+    /**
+     * The checkout status.
+     */
     val status: Status,
+
+    /**
+     * The checkout URL.
+     */
     val url: String,
+
+    /**
+     * The internal customer id from Polar.
+     */
     val customerId: Optional<UUID>,
+
+    /**
+     * The external customer id registered with Polar.
+     */
     val externalCustomerId: Optional<String>,
+
+    /**
+     * A key-value map of the custom fields provided.
+     */
     val customFieldData: Map<String, String>,
+
+    /**
+     * The final amount of money spent.
+     */
     val totalAmount: Int,
+
+    /**
+     * A string representation of the currency used.
+     */
     val currency: String,
+
+    /**
+     * The purchased product.
+     */
+    val product: Product,
+
+    /**
+     * The available selection of products.
+     */
+    val products: List<Product>,
 ) {
     enum class Status(val id: String) {
         /**
@@ -48,6 +85,20 @@ data class Checkout(
         }
     }
 
+    data class Product(
+        val id: UUID,
+        val name: String,
+    ) {
+        companion object {
+            val CODEC: Codec<Product> = RecordCodecBuilder.create { instance ->
+                instance.group(
+                    UuidCodecs.CODEC.fieldOf("id").forGetter(Product::id),
+                    Codec.STRING.fieldOf("name").forGetter(Product::name),
+                ).apply(instance, ::Product)
+            }
+        }
+    }
+
     companion object {
         val CODEC: Codec<Checkout> = RecordCodecBuilder.create { instance ->
             instance.group(
@@ -58,6 +109,8 @@ data class Checkout(
                 Codec.unboundedMap(Codec.STRING, Codec.STRING).orElseGet(::emptyMap).fieldOf("custom_field_data").forGetter(Checkout::customFieldData),
                 Codec.INT.fieldOf("total_amount").forGetter(Checkout::totalAmount),
                 Codec.STRING.fieldOf("currency").forGetter(Checkout::currency),
+                Product.CODEC.fieldOf("product").forGetter(Checkout::product),
+                Product.CODEC.listOf().fieldOf("products").forGetter(Checkout::products),
             ).apply(instance, ::Checkout)
         }
     }
