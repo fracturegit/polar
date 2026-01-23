@@ -49,7 +49,7 @@ class PolarAPI(private val secret: String, private val rootUrl: String) {
         })
     }
 
-    fun createCheckoutSession(username: String, products: Set<UUID>): Checkout {
+    fun createCheckoutSession(username: String?, products: Set<UUID>): Checkout {
         return result(Checkout.CODEC, httpPost {
             url(createUrl("checkouts/"))
             authorize()
@@ -57,8 +57,11 @@ class PolarAPI(private val secret: String, private val rootUrl: String) {
             body {
                 json {
                     "products" to products.toList()
-                    "custom_field_data" to json {
-                        CustomFields.MINECRAFT_USERNAME to username
+
+                    username?.let { username ->
+                        "custom_field_data" to json {
+                            CustomFields.MINECRAFT_USERNAME to username
+                        }
                     }
                 }
             }
