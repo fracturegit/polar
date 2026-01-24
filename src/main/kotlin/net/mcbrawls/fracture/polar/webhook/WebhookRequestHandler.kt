@@ -25,7 +25,7 @@ class WebhookRequestHandler(
 
     suspend fun handle(type: String?, json: JsonObject) {
         val handler = types[type] ?: return
-        handler.handle(json)
+        handler.handle(json) { throw it }
     }
 
     fun handleCheckoutUpdated(event: CheckoutUpdatedEvent) {
@@ -75,7 +75,15 @@ class WebhookRequestHandler(
 
         // patch
         logger.info("Paired $customerId given username $minecraftUsername to $minecraftUuid.")
-        api.patchExternalId(customerId, minecraftUuid)
+
+        runCatching {
+            api.patchExternalId(customerId, minecraftUuid)
+        }.onFailure {
+            PolarEvents.emit(
+                InvalidPolarProfileEvent::class,
+                InvalidPolarProfileEvent(event, InvalidPolarProfileEvent.Reason.USERNAME_REGISTERED)
+            )
+        }
     }
 
     fun handleCustomerStateChanged(event: CustomerStateChangedEvent) {

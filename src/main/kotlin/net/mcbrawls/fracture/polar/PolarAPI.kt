@@ -71,7 +71,7 @@ class PolarAPI(private val secret: String, private val rootUrl: String) {
     private fun <T> result(codec: Codec<T>, response: Response): T {
         return response.use { response ->
             val code = response.code()
-            if (code !in 200..299) error("Invalid response: $response")
+            if (code !in 200..299) error("Invalid response: $response, ${response.body()?.string()}")
 
             val bodyObj = response.body() ?: error("No body")
 

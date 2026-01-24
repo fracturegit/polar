@@ -9,7 +9,9 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.request.receiveChannel
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.utils.io.toByteArray
@@ -49,6 +51,9 @@ class PolarWebhookEngine(private val secret: String, polarApiKey: String, polarA
 
         server = embeddedServer(Netty, port) {
             routing {
+                get("/polar") {
+                    call.respondText("Yes!")
+                }
                 post("/polar") { handleRequest() }
             }
         }
@@ -71,10 +76,12 @@ class PolarWebhookEngine(private val secret: String, polarApiKey: String, polarA
 
             call.respond(HttpStatusCode.OK, "Request handled")
 
-            val json = gson.fromJson(bodyText, JsonObject::class.java)
-            val type = json["type"]?.asString
+            logger.info("Handling Polar request")
 
             try {
+                val json = gson.fromJson(bodyText, JsonObject::class.java)
+                val type = json["type"]?.asString
+
                 webhookRequestHandler.handle(type, json)
             } catch (exception: IllegalStateException) {
                 logger.error("Failure handling request: {}", exception.message)

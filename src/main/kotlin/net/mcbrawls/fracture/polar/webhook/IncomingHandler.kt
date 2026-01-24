@@ -10,8 +10,20 @@ data class IncomingHandler<T>(
     val handler: suspend (T) -> Unit,
 ) {
     @Throws(JsonParseException::class)
-    suspend fun handle(json: JsonObject) {
-        val event = codec.parse(JsonOps.INSTANCE, json).getOrThrow(::JsonParseException)
-        handler.invoke(event)
+    suspend fun handle(json: JsonObject, onError: (Throwable) -> Unit) {
+        val event = codec.parse(JsonOps.INSTANCE, json)
+
+        val result = event.result()
+        if (result.isEmpty) {
+            // ifError (yes)
+            event.ifError { result ->
+                val message = result.error().get().message()
+                onError.invoke(JsonParseException(message))
+            }
+
+            return
+        }
+
+        handler.invoke(result.get())
     }
 }

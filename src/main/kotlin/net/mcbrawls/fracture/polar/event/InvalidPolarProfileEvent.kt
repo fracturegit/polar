@@ -7,5 +7,6 @@ class InvalidPolarProfileEvent(
     enum class Reason {
         INVALID_USERNAME,
         PROFILE_NOT_EXIST,
+        USERNAME_REGISTERED,
     }
 }
