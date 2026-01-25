@@ -2,7 +2,7 @@ package net.mcbrawls.fracture.polar.webhook
 
 import com.google.gson.JsonObject
 import net.mcbrawls.fracture.polar.CustomFields
-import net.mcbrawls.fracture.polar.MinecraftUsernameHelper
+import net.mcbrawls.fracture.polar.MinecraftProfiles
 import net.mcbrawls.fracture.polar.PolarAPI
 import net.mcbrawls.fracture.polar.event.CheckoutUpdatedEvent
 import net.mcbrawls.fracture.polar.event.CustomerStateChangedEvent
@@ -55,7 +55,7 @@ class WebhookRequestHandler(
         val customData = checkout.customFieldData
         val minecraftUsername = customData[CustomFields.MINECRAFT_USERNAME]
             ?: error("No minecraft username provided")
-        if (!MinecraftUsernameHelper.validateMinecraftUsername(minecraftUsername)) {
+        if (!MinecraftProfiles.validateMinecraftUsername(minecraftUsername)) {
             PolarEvents.emit(
                 InvalidPolarProfileEvent::class,
                 InvalidPolarProfileEvent(event, InvalidPolarProfileEvent.Reason.INVALID_USERNAME)
@@ -64,7 +64,7 @@ class WebhookRequestHandler(
         }
 
         // get minecraft uuid from username
-        val minecraftUuid = MinecraftUsernameHelper.getPlayerUuid(minecraftUsername)
+        val minecraftUuid = MinecraftProfiles.getUuid(minecraftUsername)
         if (minecraftUuid == null) {
             PolarEvents.emit(
                 InvalidPolarProfileEvent::class,
