@@ -14,8 +14,8 @@ class DiscordWebhookHandler(url: String) {
 
             body {
                 json {
-                    "content" to StringEscapeUtils.escapeJson(content)
                     "username" to profile.username
+                    "content" to StringEscapeUtils.escapeJson(content)
 
                     profile.avatarUrl?.let { avatarUrl ->
                         "avatar_url" to avatarUrl
