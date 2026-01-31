@@ -19,32 +19,33 @@ import java.net.URL
 import java.util.UUID
 
 class PolarAPI(private val secret: String, private val rootUrl: String) {
-    fun patchExternalId(customerUuid: UUID, playerId: UUID): Customer {
+    fun patchExternalId(id: UUID, externalId: UUID): Customer {
         return result(Customer.CODEC, httpPatch {
-            url(createUrl("customers/$customerUuid"))
+            url(createUrl("customers/$id"))
 
             authorize()
 
             body {
                 json {
-                    "external_id" to playerId.toString()
+                    "external_id" to externalId.toString()
                 }
             }
         })
     }
 
-    fun getCustomerId(playerId: UUID): UUID {
+    fun getCustomerId(externalId: UUID): UUID {
         val customer = result(Customer.CODEC, httpGet {
-            url(createUrl("customers/external/$playerId"))
+            url(createUrl("customers/external/$externalId"))
             authorize()
         })
 
         return customer.id
     }
 
-    fun getCustomerState(id: UUID): CustomerState {
+    fun getCustomerState(def: CustomerDef): CustomerState {
+        val urlComponent = def.urlComponent
         return result(CustomerState.CODEC, httpGet {
-            url(createUrl("customers/$id/state"))
+            url(createUrl("customers/$urlComponent/state"))
             authorize()
         })
     }

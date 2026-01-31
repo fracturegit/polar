@@ -2,6 +2,7 @@ package net.mcbrawls.fracture.polar.webhook
 
 import com.google.gson.JsonObject
 import net.mcbrawls.fracture.polar.CustomFields
+import net.mcbrawls.fracture.polar.CustomerDef
 import net.mcbrawls.fracture.polar.MinecraftProfiles
 import net.mcbrawls.fracture.polar.PolarAPI
 import net.mcbrawls.fracture.polar.event.CheckoutUpdatedEvent
@@ -44,7 +45,7 @@ class WebhookRequestHandler(
         val customerId = checkout.customerId.getOrNull() ?: return // when does that happen??
 
         // get customer state
-        val customerState = api.getCustomerState(customerId)
+        val customerState = api.getCustomerState(CustomerDef.Polar(customerId))
 
         // check for existing customer id
         if (customerState.externalId.isPresent) return
