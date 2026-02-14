@@ -10,6 +10,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.request.receiveChannel
 import io.ktor.server.response.respond
 import io.ktor.server.routing.RoutingContext
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.utils.io.toByteArray
@@ -49,6 +50,10 @@ class PolarWebhookEngine(private val secret: String, polarApiKey: String, polarA
 
         server = embeddedServer(Netty, port) {
             routing {
+                get("/") {
+                    call.respond(HttpStatusCode.OK)
+                }
+
                 post("/polar") { handleRequest() }
             }
         }
