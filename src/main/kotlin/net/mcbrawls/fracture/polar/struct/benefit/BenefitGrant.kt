@@ -1,4 +1,4 @@
-package net.mcbrawls.fracture.polar.struct
+package net.mcbrawls.fracture.polar.struct.benefit
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder

@@ -78,7 +78,7 @@ class WebhookRequestHandler(
         logger.info("Paired $customerId given username $minecraftUsername to $minecraftUuid.")
 
         runCatching {
-            api.patchExternalId(customerId, minecraftUuid)
+            api.patchExternalIdByCustomerId(customerId, minecraftUuid)
         }.onFailure {
             PolarEvents.emit(
                 InvalidPolarProfileEvent::class,

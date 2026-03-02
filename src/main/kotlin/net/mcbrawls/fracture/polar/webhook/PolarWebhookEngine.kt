@@ -21,6 +21,7 @@ import net.mcbrawls.fracture.polar.PolarAPI
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Base64
+import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -33,11 +34,16 @@ import javax.crypto.spec.SecretKeySpec
 
                 UPDATE: POLAR has custom external id field
  */
-class PolarWebhookEngine(private val secret: String, polarApiKey: String, polarApiUrl: String) {
+class PolarWebhookEngine(
+    private val secret: String,
+    organizationId: UUID,
+    apiKey: String,
+    apiUrl: String
+) {
     private val logger: Logger = LoggerFactory.getLogger(PolarWebhookEngine::class.java)
     private val gson: Gson = Gson()
 
-    val api = PolarAPI(polarApiKey, polarApiUrl)
+    val api = PolarAPI(apiKey, apiUrl, organizationId)
 
     private val webhookRequestHandler = WebhookRequestHandler(api)
 

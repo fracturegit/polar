@@ -3,6 +3,7 @@ package net.mcbrawls.fracture.polar.struct
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.mcbrawls.codex.UuidCodecs
+import net.mcbrawls.fracture.polar.struct.product.Product
 import java.util.Optional
 import java.util.UUID
 
@@ -82,24 +83,6 @@ data class Checkout(
         companion object {
             val byId: Map<String, Status> = entries.associateBy(Status::id)
             val CODEC: Codec<Status> = Codec.STRING.xmap(byId::get, Status::id)
-        }
-    }
-
-    data class Product(
-        val id: UUID,
-        val name: String,
-    ) {
-        override fun toString(): String {
-            return name
-        }
-
-        companion object {
-            val CODEC: Codec<Product> = RecordCodecBuilder.create { instance ->
-                instance.group(
-                    UuidCodecs.CODEC.fieldOf("id").forGetter(Product::id),
-                    Codec.STRING.fieldOf("name").forGetter(Product::name),
-                ).apply(instance, ::Product)
-            }
         }
     }
 

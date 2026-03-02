@@ -11,15 +11,22 @@ import io.github.rybalkinsd.kohttp.dsl.httpPatch
 import io.github.rybalkinsd.kohttp.dsl.httpPost
 import io.github.rybalkinsd.kohttp.ext.url
 import net.mcbrawls.fracture.polar.struct.Checkout
+import net.mcbrawls.fracture.polar.struct.benefit.Benefit
 import net.mcbrawls.fracture.polar.struct.customer.Customer
 import net.mcbrawls.fracture.polar.struct.customer.CustomerState
+import net.mcbrawls.fracture.polar.struct.list.ListResponse
+import net.mcbrawls.fracture.polar.struct.product.Product
 import okhttp3.Response
 import java.net.URI
 import java.net.URL
 import java.util.UUID
 
-class PolarAPI(private val secret: String, private val rootUrl: String) {
-    fun patchExternalId(id: UUID, externalId: UUID): Customer {
+class PolarAPI(
+    private val secret: String,
+    private val rootUrl: String,
+    private val organizationId: UUID,
+) {
+    fun patchExternalIdByCustomerId(id: UUID, externalId: UUID): Customer {
         return result(Customer.CODEC, httpPatch {
             url(createUrl("customers/$id"))
 
@@ -33,7 +40,7 @@ class PolarAPI(private val secret: String, private val rootUrl: String) {
         })
     }
 
-    fun getCustomerId(externalId: UUID): UUID {
+    fun getCustomerIdByExternalId(externalId: UUID): UUID {
         val customer = result(Customer.CODEC, httpGet {
             url(createUrl("customers/external/$externalId"))
             authorize()
@@ -65,6 +72,41 @@ class PolarAPI(private val secret: String, private val rootUrl: String) {
                         }
                     }
                 }
+            }
+        })
+    }
+
+    fun getProducts(): List<Product> {
+        return getListResponse("products", Product.LIST_RESPONSE_CODEC)
+    }
+
+    fun getBenefits(): List<Benefit> {
+        return getListResponse("benefits", Benefit.LIST_RESPONSE_CODEC)
+    }
+
+    private fun <T> getListResponse(url: String, listResponseCodec: Codec<ListResponse<T>>): List<T> {
+        val all = mutableListOf<T>()
+        var page = 1
+
+        while (true) {
+            val response = getListResponsePage(url, listResponseCodec, page)
+            all.addAll(response.items)
+            if (page >= response.pagination.maxPage) break
+            page++
+        }
+
+        return all
+    }
+
+    private fun <T> getListResponsePage(url: String, listResponseCodec: Codec<ListResponse<T>>, page: Int): ListResponse<T> {
+        return result(listResponseCodec, httpGet {
+            url(createUrl(url))
+            authorize()
+
+            param {
+                "organization_id" to organizationId.toString()
+                "page" to page
+                "limit" to 100
             }
         })
     }

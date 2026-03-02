@@ -3,7 +3,7 @@ package net.mcbrawls.fracture.polar.struct.customer
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.mcbrawls.codex.UuidCodecs
-import net.mcbrawls.fracture.polar.struct.BenefitGrant
+import net.mcbrawls.fracture.polar.struct.benefit.BenefitGrant
 import java.util.Optional
 import java.util.UUID
 
