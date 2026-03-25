@@ -100,28 +100,21 @@ class PolarWebhookEngine(
     fun verifyWebhook(body: ByteArray, headers: Headers): Boolean {
         val id = headers["Webhook-Id"] ?: return false
         val timestamp = headers["Webhook-Timestamp"] ?: return false
-        val fullSignature = headers["Webhook-Signature"] ?: return false
-
-        val keyBytes = secret.toByteArray(Charsets.UTF_8)
-
-        val signedPayload = "$id.$timestamp.${String(body, Charsets.UTF_8)}"
-
-        val mac = Mac.getInstance("HmacSHA256")
-        mac.init(SecretKeySpec(keyBytes, "HmacSHA256"))
-        val computed = mac.doFinal(signedPayload.toByteArray(Charsets.UTF_8))
-
-        val computedBase64 = Base64.getEncoder().encodeToString(computed)
-        val signature = fullSignature.substringAfter("v1,")
-
-        return constantTimeEquals(computedBase64, signature)
+        val signature = headers["Webhook-Signature"] ?: return false
+        return verifyWebhook(secret, body, id, timestamp, signature)
     }
 
-    fun constantTimeEquals(a: String, b: String): Boolean {
-        if (a.length != b.length) return false
-        var result = 0
-        for (i in a.indices) {
-            result = result or (a[i].code xor b[i].code)
+    companion object {
+        fun verifyWebhook(secret: String, body: ByteArray, id: String, timestamp: String, fullSignature: String): Boolean {
+            val signedPayload = "$id.$timestamp.${String(body, Charsets.UTF_8)}"
+            val mac = Mac.getInstance("HmacSHA256")
+            mac.init(SecretKeySpec(secret.toByteArray(Charsets.UTF_8), "HmacSHA256"))
+            val computedBase64 = Base64.getEncoder().encodeToString(mac.doFinal(signedPayload.toByteArray(Charsets.UTF_8)))
+            val signature = fullSignature.substringAfter("v1,")
+            if (computedBase64.length != signature.length) return false
+            var result = 0
+            for (i in computedBase64.indices) result = result or (computedBase64[i].code xor signature[i].code)
+            return result == 0
         }
-        return result == 0
     }
 }
