@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    api("net.mcbrawls:codex:2.0.0")
+    api("net.mcbrawls:codex:2.0.1")
     api("io.github.rybalkinsd:kohttp:0.12.0")
 
     val kacheVersion = "2.1.1"
