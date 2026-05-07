@@ -9,6 +9,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.request.receiveChannel
 import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
@@ -51,7 +52,7 @@ class PolarWebhookEngine(
         private set
 
     @OptIn(DelicateCoroutinesApi::class)
-    fun initialize(port: Int) {
+    fun initialize(port: Int, additionalRoutes: Route.() -> Unit = {}) {
         logger.info("Starting polar webhook server on port $port")
 
         server = embeddedServer(Netty, port) {
@@ -61,6 +62,8 @@ class PolarWebhookEngine(
                 }
 
                 post("/polar") { handleRequest() }
+
+                additionalRoutes()
             }
         }
 

@@ -32,6 +32,8 @@ object Main {
 
         logger.info("Starting Polar webhook relay on port $port")
         if (forwardUrl != null) {
+            // In production: point POLAR_FORWARD_URL at the postbox service (PORT_POSTBOX).
+            // Postbox re-verifies the signature, processes impulses, then proxies to the game server.
             logger.info("Forwarding verified events to: $forwardUrl")
         }
 
